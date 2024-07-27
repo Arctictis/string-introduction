@@ -16,20 +16,15 @@ public class Strings {
         return "^[A-Z][a-z]{4,}$";
     }
     public static String javaVariable(){
-        return "^[a-zA-Z_$][a-zA-Z\\d_$]*$";
+        return "^(?!_\\b)[a-zA-Z_$][a-zA-Z\\\\d_$]*$";
     }
-/*public static boolean isValidJavaVariable(String variable, String name) {
-    Pattern pattern = Pattern.compile(variable);
-        Matcher matcher = pattern.matcher(name);
-        return matcher.matches() && !reservedKeywords.contains(name);
-    }*/
 
     public static List<Integer> findInvalidVariableIndex(String variable, String[] name) {
         List<Integer> invalidIndex = new ArrayList<>();
         Pattern pattern = Pattern.compile(variable);
         for (int i = 0; i < name.length; i++) {
             Matcher matcher = pattern.matcher(name[i]);
-            if (!matcher.matches() || reservedKeywords.contains(name[i]) || name[i].equals("_"))  {
+            if (!matcher.matches() || reservedKeywords.contains(name[i]))  {
                 invalidIndex.add(i);
             }
         }

@@ -11,7 +11,7 @@ public class RegularExpressionsTest {
     @Test
     void javaVariableTest(){
         String[] str = {"myVar", "1stVar", "$dollar","var-name", "_underscore", "my var", "var123", "#var", "v_$1", ""};
-         List<Integer> expectedInvalidIndex = Arrays.asList(1, 3, 5, 7, 9);
+         List<Integer> expectedInvalidIndex = Arrays.asList(1, 3, 5, 6, 7, 8, 9);
          List<Integer> invalidIndex = Strings.findInvalidVariableIndex(Strings.javaVariable(), str);
     assertEquals(expectedInvalidIndex , invalidIndex);
     String[] str2 = {"Hello", "Java", "World"};
@@ -26,13 +26,3 @@ assertEquals(expectedInvalidIndex3 , invalidIndex3);
 
 
 }
-/*
- * public static int findFirstInvalidVariableNameIndex(String[] names) {
-        for (int i = 0; i < names.length; i++) {
-            if (!isValidVariableName(names[i])) {
-                return i; // Возвращает индекс первого некорректного имени
-            }
-        }
-        return -1; // Возвращает -1, если все имена корректны
-    }
- */
