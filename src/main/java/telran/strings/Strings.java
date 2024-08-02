@@ -9,7 +9,13 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.lang.model.SourceVersion;
+
 public class Strings {
+    static Pattern pattern;
+    static {
+        pattern = Pattern.compile(getArithmeticRegex());
+    }
     public static String firstName(){
         //regex for strings starting with capital 
         //letter and rest as lowercase letters
@@ -17,8 +23,8 @@ public class Strings {
         return "^[A-Z][a-z]{4,}$";
     }
     public static String javaVariable(){
-        return "^(?!_\\b)[a-zA-Z_$][a-zA-Z\\\\d_$]*$";
-        //return "((?!_$)[a-zA-Z$_][\\w$]*)";
+        //return "^(?!_\\b)[a-zA-Z_$][a-zA-Z\\\\d_$]*$";
+        return "((?!_$)[a-zA-Z$_][\\w$]*)";
     }
 
     public static List<Integer> findInvalidVariableIndex(String variable, String[] name) {
@@ -87,64 +93,64 @@ public class Strings {
         
         return string.matches(javaVariable()) && java.util.Arrays.binarySearch(Keywords, string) < 0;
 }
-
+private static boolean isJavaKeyword(String string) {
+        return SourceVersion.isKeyword(string);
+    }
 public static boolean isArithmeticExpression(String expr) {
-    String operand = "[a-zA-Z_$][a-zA-Z\\d_$]*|\\d+(\\.\\d+)?";
-    String operator = "[+*/-]";
-    String regex = "\\s*(" + operand + ")\\s*(" + operator + "\\s*(" + operand + ")\\s*)*";
-    Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(stack(expr));
-    boolean checker = true;
-        if (!matcher.matches()) {
-            checker = false;
-        }
-    return bracketsValidity(expr) && checker;
+    
+    Matcher matcher = pattern.matcher(expr);
+    boolean exprMatch = matcher.matches();
+    boolean pairness = pairnessCheck(expr);
+    boolean javaNames = javaNamesCheck(expr);
+    return  exprMatch && pairness && javaNames;
 }
 
-
-
-
-//Additional Mehods
-public static String stack(String expr) {
-        Stack<Integer> stack = new Stack<>();
-        StringBuilder newExpr = new StringBuilder(expr);
-        for (int i = 0; i < newExpr.length(); i++) { 
-            char ch = newExpr.charAt(i);
-            if (ch == '(') {
-                stack.push(i);
-            } else if (ch == ')') {
-                if (!stack.isEmpty()) {
-                    int start = stack.pop();
-                    newExpr.replace(start, i + 1, "1");
-                    i = start;
-                }
-            }
-        }
-        return newExpr.toString();
+private static boolean javaNamesCheck(String expr) {
+    String[] operands = expr.split(getRegexForOperandsSep());
+    int index = 0;
+    while(index < operands.length && !isJavaKeyword(operands[index])) {
+        index++;
     }
+    return index == operands.length;
+}
 
-    public static boolean bracketsValidity (String expr){
-        int counter = 0;
-    for (char ch : expr.toCharArray()){
-        if (ch == '(') {
+private static String getRegexForOperandsSep() {
+    return String.format("%s|[\\s()]+", getOperatorRegex());
+}
+
+private static String getOperatorRegex() {
+    return "[+/*-]";
+}
+
+private static boolean pairnessCheck(String expr) {
+    char[] exprChars = expr.toCharArray();
+    int index = 0;
+    int counter = 0;
+    while(index < exprChars.length && counter >= 0) {
+        if (exprChars[index] == '(') {
             counter++;
-        } else if (ch == ')') {
+        } else if(exprChars[index] == ')') {
             counter--;
-            if (counter < 0) {
-                return false;
-            }
         }
+        index++;
     }
-        return counter == 0 ? true : false;
-    }
+    return counter == 0;
+}
 
-    //1. brackets
-    //right position of open / close bracket is matter of regex
-    //matching between open and close bracket is matter of the method you are supposed to write
-    //based on a counter. If counter is negative - no matching;
-    // if at ending up going through a string the counter doesn't equal 0 - no matching
-    //matching may be only in one case: at the ending up of going the counter will be 0
-    // Operator - regular expression for one out of 4 arithemetic operators [*/+-]
-    //Operand may be either Java variable name or number (better any)
+private static String getArithmeticRegex() {
+    String operator = getOperatorRegex();
+    String operand = getOperandRegex();
+    String regex = String.format("%s(%s%s)*", operand, operator, operand);
+    return regex;
+}
 
+private static String getOperandRegex() {
+    String number = getNumberRegex();
+    String regex = String.format("[\\s(]*(%s|%s)[\\s)]*", number, javaVariable());
+    return regex;
+}
+
+private static String getNumberRegex() {
+    return "\\d+\\.?\\d*|\\.\\d+";
+}
 }
